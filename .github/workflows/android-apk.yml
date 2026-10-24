@@ -1,4 +1,5 @@
 name: Neo KI Android APK
+
 on:
   workflow_dispatch:
   push:
@@ -12,26 +13,35 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Projekt entpacken
         run: unzip -q NeoKI_Android_Projekt_v0.2.zip -d projekt
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
-      - name: Android SDK
-        
-run: $(find /usr/local/lib/android/sdk/
-cmdline-tools -type f -name sdkmanager
-| head -n 1) 'platforms;android-36'
-'build-tools;36.0.0'
+
+      - name: Android SDK vorbereiten
+        run: |
+          SDKMANAGER=$(find "$ANDROID_HOME" \
+            -type f -name sdkmanager -print -quit)
+          test -n "$SDKMANAGER"
+          "$SDKMANAGER" \
+            'platforms;android-36' \
+            'build-tools;36.0.0'
+
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.13'
-      - name: APK bauen
+
+      - name: Neo KI APK bauen
         working-directory: projekt/NeoKI/android
         run: gradle :app:assembleDebug --no-daemon
+
       - uses: actions/upload-artifact@v4
         with:
           name: NeoKI-APK
-          path: projekt/NeoKI/android/app/build/outputs/apk/debug/app-debug.apk
+          path: |
+            projekt/NeoKI/android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error

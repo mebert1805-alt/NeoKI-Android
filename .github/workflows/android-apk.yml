@@ -1,3 +1,4 @@
+
 name: Neo KI Android APK
 
 on:
@@ -16,6 +17,31 @@ jobs:
 
       - name: Projekt entpacken
         run: unzip -q NeoKI_Android_Projekt_v0.2.zip -d projekt
+
+      - name: Kotlin-JVM-Einstellung korrigieren
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          datei = Path('projekt/NeoKI/android/app/build.gradle.kts')
+          text = datei.read_text(encoding='utf-8')
+          muster = r'(?m)^[ \t]*kotlinOptions\s*\{\s*jvmTarget\s*=\s*"17"\s*\}[ \t]*\n?'
+          neu, anzahl = re.subn(muster, '', text)
+          if anzahl != 1:
+              raise SystemExit(f'Alte Kotlin-Einstellung nicht eindeutig gefunden: {anzahl} Treffer')
+
+          neu += '''
+
+          kotlin {
+              compilerOptions {
+                  jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17)
+              }
+          }
+          '''
+          datei.write_text(neu, encoding='utf-8')
+          print('Kotlin JVM 17: korrigiert')
+          PY
 
       - uses: actions/setup-java@v4
         with:
@@ -42,6 +68,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: NeoKI-APK
-          path: |
-            projekt/NeoKI/android/app/build/outputs/apk/debug/app-debug.apk
+          path: projekt/NeoKI/android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+          

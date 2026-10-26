@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Projekt entpacken
-        run: unzip -q NeoKI_Android_Projekt_v0.3_Cloudflare.zip -d projekt
+        run: unzip -q NeoKI_Android_Projekt_v0.9.3_Bilder-1.zip -d projekt
 
       - name: Kotlin-JVM-Einstellung korrigieren
         run: |
